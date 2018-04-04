@@ -1,0 +1,47 @@
+//
+//  Information retrieval course
+//  First version: Johan Boye 2016
+//
+// In this file you can put your regular expressions
+// for matching non-standard words (like mail addresses).
+//
+// As you have probably already understood, lines beginning
+// with "//" are comments.
+
+//email
+([a-zA-Z0-9]+(\.|_)*)+@([a-zA-Z0-9]+(\.|_)*)+\.[a-zA-Z]+
+
+// Special case
+[a-z]\.[a-z]\.
+--
+'em
+\+\d+
+
+// Currencies
+\$\d+
+
+// Dates
+\d+/\d+
+\d+/\d+/\d+
+
+// Phone
+([0-9]+)(\.([0-9]+))+
+([0-9]+)(-([0-9]+))+
+([0-9]+)(:([0-9]+))+
+
+// Compose Word with -,.,',"
+[a-zA-Z0-9]+(-[a-zA-Z0-9]+)+
+[a-zA-Z0-9]+('[a-zA-Z0-9]+)+
+[a-zA-Z0-9]+("[a-zA-Z0-9]+)+
+[a-zA-Z0-9]+(,[a-zA-Z0-9]+)+
+
+// Website
+(http(s)?://)([a-zA-Z0-9]+(\.|_)?)+(:\d+)?(/)?([a-zA-Z0-9]+(/|_|.|$)?)*(\?[a-zA-Z0-9]+(\+[a-zA-Z0-9]+)*)?(#[a-zA-Z0-9]+)?
+
+// (/[a-zA-Z0-9]+)* // directories
+
+// (/[a-zA-Z0-9]+\.[a-zA-Z]+)? // file
+
+// (#[a-zA-Z0-9]+) // ancre
+
+// (\?[a-zA-Z0-9]+(\+[a-zA-Z0-9]+)*) // param
