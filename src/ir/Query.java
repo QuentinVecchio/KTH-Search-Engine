@@ -22,7 +22,7 @@ public class Query {
     /**
     *  Help class to represent one query term, with its associated weight.
     */
-    class QueryTerm {
+    public class QueryTerm {
         String term;
         double weight;
         QueryTerm( String t, double w ) {
@@ -69,6 +69,10 @@ public class Query {
         }
     }
 
+    public void add(String term, double weight) {
+        queryterm.add( new QueryTerm(term, 1.0) );
+    }
+
 
     /**
     *  Returns the number of terms
@@ -113,22 +117,22 @@ public class Query {
         // Compute the score of term
         computeWeightsQuery();
 
-        // Compute weight ROCCHIO
-        for(int i=0;i<queryterm.size();++i) {
-            System.out.println(queryterm.get(i).weight);
-            queryterm.get(i).weight *= alpha;
-        }
-
-        // Terms from relevant documents
-        for(int i=0;i<docIsRelevant.length;++i) {
-            if(docIsRelevant[i]) {
-                int docID = results.get(i).docID;
-                //engine.
-            }
-        }
+        // // Compute weight ROCCHIO
+        // for(int i=0;i<queryterm.size();++i) {
+        //     System.out.println(queryterm.get(i).weight);
+        //     queryterm.get(i).weight *= alpha;
+        // }
+        //
+        // // Terms from relevant documents
+        // for(int i=0;i<docIsRelevant.length;++i) {
+        //     if(docIsRelevant[i]) {
+        //         int docID = results.get(i).docID;
+        //         //engine.
+        //     }
+        // }
     }
 
-    private void computeWeightsQuery() {
+    public void computeWeightsQuery() {
         HashMap<String, Integer> frequency = new HashMap<String, Integer>();
         for(int i=0;i<queryterm.size();++i) {
             if(frequency.get(this.queryterm.get(i).term) == null) {

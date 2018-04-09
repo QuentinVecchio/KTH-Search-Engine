@@ -33,7 +33,7 @@ public class HashedIndex implements Index {
                if(!index.containsKey(token)) {
                    index.put(token, new PostingsList());
                }
-               //index.get(token).add(docID, 0, offset);
+               index.get(token).add(docID, 0, offset);
            }
     }
 

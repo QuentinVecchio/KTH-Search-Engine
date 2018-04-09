@@ -10,7 +10,7 @@ package ir;
 import java.io.*;
 import java.util.*;
 import java.nio.charset.StandardCharsets;
-
+import java.util.regex.Pattern;
 
 public class KGramIndex {
 
@@ -27,7 +27,7 @@ public class KGramIndex {
     int lastTermID = -1;
 
     /** Number of symbols to form a K-gram */
-    int K = 3;
+    int K = 2;
 
     public KGramIndex(int k) {
         K = k;
@@ -49,10 +49,13 @@ public class KGramIndex {
     /**
      *  Get intersection of two postings lists
      */
-    private List<KGramPostingsEntry> intersect(List<KGramPostingsEntry> p1, List<KGramPostingsEntry> p2) {
+    public List<KGramPostingsEntry> intersect(List<KGramPostingsEntry> p1, List<KGramPostingsEntry> p2) {
         List<KGramPostingsEntry> intersection = new ArrayList<KGramPostingsEntry>();
         int pointer1 = 0;
         int pointer2 = 0;
+        // System.out.println("P1 : " + Integer.toString(p1.size()));
+        // System.out.println("P2 : " + Integer.toString(p2.size()));
+
         while(pointer1 < p1.size() && pointer2 < p2.size()) {
             if(p1.get(pointer1).tokenID == p2.get(pointer2).tokenID) {
                 intersection.add(new KGramPostingsEntry(p1.get(pointer1)));
@@ -66,37 +69,92 @@ public class KGramIndex {
                 }
             }
         }
+        // System.out.println("Intersection : " + Integer.toString(intersection.size()));
         return intersection;
     }
 
+    public List<KGramPostingsEntry> match(String token) {
+        if(token.contains("*")) {
+            List<KGramPostingsEntry> before = null;
+            List<KGramPostingsEntry> after = null;
+            List<KGramPostingsEntry> intersection = null;
+            List<KGramPostingsEntry> results = new ArrayList<KGramPostingsEntry>();
+            int positionOfStar = token.indexOf("*");
+            String reg = "";
+            if(positionOfStar == 0) {
+                // *oney
+                token = token.substring(positionOfStar+1,token.length());
+                reg = ".*" + token + "$";
+                token += "$";
+                after = this.search(token);
+                // System.out.println("Search : " + token);
+                // System.out.println("Regex : " + reg);
+            } else if(positionOfStar == token.length()-1) {
+                // mone*
+                token = token.substring(0,positionOfStar);
+                reg = "^" + token + ".*";
+                token = "^" + token;
+                // System.out.println("Search : " + token);
+                // System.out.println("Regex : " + reg);
+                before = this.search(token);
+            } else {
+                // mo*ey
+                reg = "^" + token.substring(0,positionOfStar) + ".*" + token.substring(positionOfStar+1,token.length()) + "$";
+                // System.out.println("Search for $" + token.substring(0,positionOfStar) + " and " + token.substring(positionOfStar+1,token.length()) + "$");
+                // System.out.println("Regex : " + reg);
+                before = this.search("^" + token.substring(0,positionOfStar));
+                after = this.search(token.substring(positionOfStar+1,token.length()) + "$");
+            }
+            if(before != null && after != null) {
+                intersection = intersect(before, after);
+            } else if(before != null) {
+                intersection = before;
+            } else {
+                intersection = after;
+            }
+            for(int i=0;i<intersection.size();++i) {
+                String s = getTermByID(intersection.get(i).tokenID);
+                if(Pattern.matches(reg, s)) {
+                    results.add(intersection.get(i));
+                }
+            }
+            return results;
+        } else {
+            return this.search("^" + token + "$");
+        }
+    }
+
+    private List<KGramPostingsEntry> search(String token) {
+        List<KGramPostingsEntry> tokenIntersection = null;
+        for(int i=0;i<=token.length()-K;++i) {
+            String kgram = token.substring(i,i+K);
+            // System.out.println("-> " + kgram);
+            List<KGramPostingsEntry> postings = getPostings(kgram);
+            if(postings != null) {
+                if(tokenIntersection == null) {
+                    tokenIntersection = postings;
+                } else {
+                    tokenIntersection = intersect(tokenIntersection, postings);
+                }
+            }
+        }
+        return tokenIntersection;
+    }
 
     /** Inserts all k-grams from a token into the index. */
     public void insert( String token ) {
         // Creation or retrieval of the token
-        int tokenID = -1;
         if(term2id.get(token) == null) {
-            tokenID = generateTermID();
+            int tokenID = generateTermID();
             term2id.put(token, tokenID);
             id2term.put(tokenID, token);
-        } else {
-            tokenID = term2id.get(token);
-        }
-        KGramPostingsEntry entry = new KGramPostingsEntry(tokenID);
-
-        // Processing
-        token = "$" + token + "$";
-        for(int i=0;i<token.length()-K;++i) {
-            String kgram = token.substring(i,i+K);
-            if(index.get(kgram) == null) {
-                index.put(kgram, new ArrayList<KGramPostingsEntry>());
-            }
-            boolean exist = false;
-            for(int j=0;j<index.get(kgram).size();++j) {
-                if(index.get(kgram).get(j).tokenID == tokenID) {
-                    exist = true;
+            token = "^" + token + "$";
+            KGramPostingsEntry entry = new KGramPostingsEntry(tokenID);
+            for(int i=0;i<=token.length()-K;++i) {
+                String kgram = token.substring(i,i+K);
+                if(index.get(kgram) == null) {
+                    index.put(kgram, new ArrayList<KGramPostingsEntry>());
                 }
-            }
-            if(!exist) {
                 index.get(kgram).add(entry);
             }
         }

@@ -20,6 +20,10 @@ public class PostingsList {
 
     }
 
+    public PostingsList(PostingsList copy) {
+        this.list = new ArrayList<PostingsEntry>(copy.list);
+    }
+
     public PostingsList(String s) {
         String[] docs = s.split("]");
         for(int i=0;i<docs.length;++i) {
@@ -100,7 +104,7 @@ public class PostingsList {
 
     public void merge(PostingsList listEntries) {
         for(int i=0;i<listEntries.list.size();++i) {
-            this.addAndMerge(listEntries.list.get(i));
+            this.addAndMerge(new PostingsEntry(listEntries.list.get(i)));
         }
     }
 

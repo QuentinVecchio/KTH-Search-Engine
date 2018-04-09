@@ -24,6 +24,8 @@ public class Indexer {
     /** The index to be built up by this Indexer. */
     Index index;
 
+    KGramIndex indexKGram;
+
     /** The next docID to be generated. */
     private int lastDocID = 0;
 
@@ -35,18 +37,16 @@ public class Indexer {
 
 
     /** Constructor */
-    public Indexer( Index index, String patterns_file ) {
+    public Indexer(Index index, String patterns_file, KGramIndex indexKGram) {
         this.index = index;
         this.patterns_file = patterns_file;
+        this.indexKGram = indexKGram;
     }
-
 
     /** Generates a new document identifier as an integer. */
     private int generateDocID() {
         return lastDocID++;
     }
-
-
 
     /**
     *  Tokenizes and indexes the file @code{f}. If <code>f</code> is a directory,
@@ -133,6 +133,7 @@ public class Indexer {
     *  Indexes one token.
     */
     public void insertIntoIndex( int docID, String token, int offset ) {
-        index.insert( token, docID, offset );
+        index.insert(token, docID, offset);
+        indexKGram.insert(token);
     }
 }

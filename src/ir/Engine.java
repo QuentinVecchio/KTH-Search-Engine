@@ -47,6 +47,8 @@ public class Engine {
     /** For persistent indexes, we might not need to do any indexing. */
     boolean is_indexing = true;
 
+    KGramIndex indexKGram = new KGramIndex(2);
+
     SpellChecker speller;
 
     /* ----------------------------------------------- */
@@ -58,10 +60,10 @@ public class Engine {
     */
     public Engine( String[] args ) {
         decodeArgs( args );
-        indexer = new Indexer( index, patterns_file );
-        searcher = new Searcher( index );
+        indexer = new Indexer(index, patterns_file, indexKGram);
+        searcher = new Searcher(index, indexKGram);
         gui = new SearchGUI( this );
-        speller = new SpellChecker(index, new KGramIndex(2));
+        speller = new SpellChecker(index, indexKGram);
         gui.init();
         /*
         *   Calls the indexer to index the chosen directory structure.

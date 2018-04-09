@@ -169,7 +169,7 @@ public class SearchGUI extends JFrame {
                     displayInfoText( "Found 0 matching document(s)" );
                     SpellingOptionsDialog dialog = new SpellingOptionsDialog(50);
 		    // To make this compile, you will need to add to the Engine class
-		    // an instance variable 'speller' of class SpellChecker 
+		    // an instance variable 'speller' of class SpellChecker
                     String[] corrections = engine.speller.check(query, 10);
                     if (corrections != null && corrections.length > 0) {
                         String choice = dialog.show(corrections, corrections[0]);

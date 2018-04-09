@@ -18,12 +18,14 @@ public class Searcher {
 
     /** The index to be searched by this Searcher. */
     Index index;
+    KGramIndex indexKGram;
     HashMap<Integer, Double> ranking = new HashMap<Integer, Double>();
     HashMap<String, Integer> docNamesPageRank = new HashMap<String, Integer>();
 
     /** Constructor */
-    public Searcher( Index index ) {
+    public Searcher(Index index, KGramIndex indexKGram) {
         this.index = index;
+        this.indexKGram = indexKGram;
         readPageRankFile("../data/davis_page_rank.txt");
         readPageRankTitleFile("../data/davisWikiArticleTitles.txt");
     }
@@ -75,17 +77,66 @@ public class Searcher {
     *  @return A postings list representing the result of the query.
     */
     public PostingsList search( Query query, QueryType queryType, RankingType rankingType ) {
-        ArrayList<PostingsList> lists = new ArrayList<PostingsList>();
+        // K-GRAM
+        HashMap<String, List<KGramPostingsEntry>> wildCards = new HashMap<String, List<KGramPostingsEntry> >();
         for(int i=0;i<query.size();++i) {
-            PostingsList list = index.getPostings(query.queryterm.get(i).term);
-            if(list != null) {
-                lists.add(list);
-            }
+            String term = query.queryterm.get(i).term;
+            List<KGramPostingsEntry> matches = indexKGram.match(term);
+            wildCards.put(query.queryterm.get(i).term, matches);
+            System.out.println(query.queryterm.get(i).term + " : " + Integer.toString(matches.size()));
         }
+        // Print
+        // for (String key : wildCards.keySet()) {
+        //     System.out.println(key);
+        //     for(int i=0;i<wildCards.get(key).size();++i) {
+        //         System.out.println(indexKGram.getTermByID(wildCards.get(key).get(i).tokenID));
+        //     }
+        // }
 
-        if(queryType == QueryType.PHRASE_QUERY) {
-            return this.positionalIntersect(lists);
-        } else if(queryType == QueryType.RANKED_QUERY) {
+        // // Inverted index
+        ArrayList<PostingsList> lists = new ArrayList<PostingsList>();
+        // for (String key : wildCards.keySet()) {
+        //     PostingsList list = null;
+        //     for(int i=0;i<wildCards.get(key).size();++i) {
+        //         String term = indexKGram.getTermByID(wildCards.get(key).get(i).tokenID);
+        //         if(list == null) {
+        //             list = index.getPostings(term);
+        //         } else {
+        //             list.merge(index.getPostings(term));
+        //         }
+        //     }
+        //     if(list != null) {
+        //         lists.add(list);
+        //     }
+        // }
+        //
+        // if(queryType == QueryType.PHRASE_QUERY) {
+        //     return this.positionalIntersect(lists);
+        // } else if(queryType == QueryType.RANKED_QUERY) {
+        //     if(rankingType == RankingType.PAGERANK) {
+        //         return this.pageRank(lists);
+        //     } else if(rankingType == RankingType.COMBINATION) {
+        //         return this.combination(lists);
+        //     } else {
+        //         return this.tfIdf(query);
+        //     }
+        // } else {
+        //     return this.intersect(lists);
+        // }
+
+        if(queryType == QueryType.RANKED_QUERY) {
+            query.queryterm.clear();
+            for (String key : wildCards.keySet()) {
+                PostingsList list = null;
+                for(int i=0;i<wildCards.get(key).size();++i) {
+                    String term = indexKGram.getTermByID(wildCards.get(key).get(i).tokenID);
+                    query.add(term, 0);
+                    list = index.getPostings(term);
+                    if(list != null) {
+                        lists.add(list);
+                    }
+                }
+            }
             if(rankingType == RankingType.PAGERANK) {
                 return this.pageRank(lists);
             } else if(rankingType == RankingType.COMBINATION) {
@@ -94,7 +145,25 @@ public class Searcher {
                 return this.tfIdf(query);
             }
         } else {
-            return this.intersect(lists);
+            for (String key : wildCards.keySet()) {
+                PostingsList list = null;
+                for(int i=0;i<wildCards.get(key).size();++i) {
+                    String term = indexKGram.getTermByID(wildCards.get(key).get(i).tokenID);
+                    if(list == null) {
+                        list = new PostingsList(index.getPostings(term));
+                    } else {
+                        list.merge(index.getPostings(term));
+                    }
+                }
+                if(list != null) {
+                    lists.add(list);
+                }
+            }
+            if(queryType == QueryType.PHRASE_QUERY) {
+                return this.positionalIntersect(lists);
+            } else {
+                return this.intersect(lists);
+            }
         }
     }
 
@@ -188,7 +257,7 @@ public class Searcher {
     private PostingsList tfIdf(Query query) {
         PostingsList results = new PostingsList();
         double scores[] = new double[index.docNames.size()];
-        //computeWeightsQuery(query);
+        query.computeWeightsQuery();
 
         for(int i=0;i<query.size();++i) {
             PostingsList list = index.getPostings(query.queryterm.get(i).term);

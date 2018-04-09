@@ -37,7 +37,18 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
         }
     }
 
+    public PostingsEntry(PostingsEntry copy) {
+        this.docID = copy.docID;
+        this.score = copy.score;
+        this.positions = new ArrayList<Integer>(copy.positions);
+    }
+
     public void addPosition(int position) {
+        this.insertPosition(position);
+        //this.positions.add(position);
+    }
+
+    public void insertPosition(int position) {
         int start = 0;
         int end = this.positions.size() - 1;
         int i;
@@ -51,13 +62,13 @@ public class PostingsEntry implements Comparable<PostingsEntry>, Serializable {
                 end = i-1;
             }
         }
-        this.positions.add(position);
+        this.positions.add(start,position);
     }
 
     public void merge(PostingsEntry entry) {
         if(this.docID == entry.docID) {
             for(int i=0;i<entry.positions.size();++i) {
-                this.addPosition(entry.positions.get(i));
+                this.insertPosition(entry.positions.get(i));
             }
         }
     }
