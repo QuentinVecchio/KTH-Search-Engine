@@ -113,23 +113,49 @@ public class Query {
     *  @param docIsRelevant A boolean array representing which query results the user deemed relevant.
     *  @param engine The search engine object
     */
-    public void relevanceFeedback(PostingsList results, boolean[] docIsRelevant, Engine engine) {
-        // Compute the score of term
-        computeWeightsQuery();
+    public void relevanceFeedback(PostingsList results, boolean[] docIsRelevant, Engine engine, QueryType queryType) {
+        if(queryType == QueryType.RANKED_QUERY) {
+            // Compute the number of relevant documents
+            int nbDocRelevant = 0;
+            for(int i=0;i<docIsRelevant.length;++i) {
+                if(docIsRelevant[i]) {
+                    nbDocRelevant++;
+                }
+            }
 
-        // // Compute weight ROCCHIO
-        // for(int i=0;i<queryterm.size();++i) {
-        //     System.out.println(queryterm.get(i).weight);
-        //     queryterm.get(i).weight *= alpha;
-        // }
-        //
-        // // Terms from relevant documents
-        // for(int i=0;i<docIsRelevant.length;++i) {
-        //     if(docIsRelevant[i]) {
-        //         int docID = results.get(i).docID;
-        //         //engine.
-        //     }
-        // }
+            // Number of documents
+            double N = engine.index.docNames.size();
+
+            // Normalize query
+            for(int i=0;i<queryterm.size();++i) {
+                if(engine.index.getPostings(queryterm.get(i).term) != null) {
+                    double docFrequency = engine.index.getPostings(queryterm.get(i).term).size();
+                    double idf = Math.log10(N / docFrequency);
+                    queryterm.get(i).weight = queryterm.get(i).weight * alpha * idf / queryterm.size();
+                }
+            }
+
+            // Terms from relevant documents
+            for(int i=0;i<docIsRelevant.length;++i) {
+                if(docIsRelevant[i]) {
+                    PostingsEntry entry = results.get(i);
+                    ArrayList<String> termsOfDocument = engine.index.getTermFromDocument(entry.docID);
+                    double docLength = engine.index.docLengths.get(entry.docID);
+                    for (String term : termsOfDocument) {
+                        int existingIndex = queryterm.indexOf(term);
+                        // IDF
+                        double docFrequency = engine.index.getPostings(term).size();
+                        double idf = Math.log10(N / docFrequency);
+                        double score = beta / nbDocRelevant * idf / docLength;
+                        if (existingIndex != -1) {
+                            queryterm.get(existingIndex).weight += score;
+                        } else {
+                            queryterm.add(new QueryTerm(term, score));
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void computeWeightsQuery() {

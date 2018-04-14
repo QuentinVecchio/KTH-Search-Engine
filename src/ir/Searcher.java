@@ -95,35 +95,6 @@ public class Searcher {
 
         // // Inverted index
         ArrayList<PostingsList> lists = new ArrayList<PostingsList>();
-        // for (String key : wildCards.keySet()) {
-        //     PostingsList list = null;
-        //     for(int i=0;i<wildCards.get(key).size();++i) {
-        //         String term = indexKGram.getTermByID(wildCards.get(key).get(i).tokenID);
-        //         if(list == null) {
-        //             list = index.getPostings(term);
-        //         } else {
-        //             list.merge(index.getPostings(term));
-        //         }
-        //     }
-        //     if(list != null) {
-        //         lists.add(list);
-        //     }
-        // }
-        //
-        // if(queryType == QueryType.PHRASE_QUERY) {
-        //     return this.positionalIntersect(lists);
-        // } else if(queryType == QueryType.RANKED_QUERY) {
-        //     if(rankingType == RankingType.PAGERANK) {
-        //         return this.pageRank(lists);
-        //     } else if(rankingType == RankingType.COMBINATION) {
-        //         return this.combination(lists);
-        //     } else {
-        //         return this.tfIdf(query);
-        //     }
-        // } else {
-        //     return this.intersect(lists);
-        // }
-
         if(queryType == QueryType.RANKED_QUERY) {
             query.queryterm.clear();
             for (String key : wildCards.keySet()) {

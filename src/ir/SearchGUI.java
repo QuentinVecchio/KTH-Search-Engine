@@ -149,7 +149,7 @@ public class SearchGUI extends JFrame {
                         if ( box[i] != null )
                             relevant[i] = box[i].isSelected();
                     }
-                    query.relevanceFeedback( results, relevant, engine );
+                    query.relevanceFeedback( results, relevant, engine, queryType);
                 }
                 // Search and print results. Access to the index is synchronized since
                 // we don't want to search at the same time we're indexing new files

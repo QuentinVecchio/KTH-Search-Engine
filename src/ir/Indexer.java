@@ -32,6 +32,7 @@ public class Indexer {
     /** The patterns matching non-standard words (e-mail addresses, etc.) */
     String patterns_file;
 
+    HashMap<Integer, ArrayList<String> > termsInDocuments;
 
     /* ----------------------------------------------- */
 
@@ -41,6 +42,7 @@ public class Indexer {
         this.index = index;
         this.patterns_file = patterns_file;
         this.indexKGram = indexKGram;
+        this.termsInDocuments = new HashMap<Integer, ArrayList<String> >();
     }
 
     /** Generates a new document identifier as an integer. */
@@ -135,5 +137,9 @@ public class Indexer {
     public void insertIntoIndex( int docID, String token, int offset ) {
         index.insert(token, docID, offset);
         indexKGram.insert(token);
+        // if(this.termsInDocuments.get(docID) == null) {
+        //     this.termsInDocuments.put(docID, new ArrayList<String>());
+        // }
+        // this.termsInDocuments.get(docID).add(token);
     }
 }

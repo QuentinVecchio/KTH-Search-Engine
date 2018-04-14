@@ -10,7 +10,7 @@ package ir;
 
 import java.util.HashMap;
 import java.util.Iterator;
-
+import java.util.ArrayList;
 
 /**
  *   Implements an inverted index as a Hashtable from words to PostingsLists.
@@ -47,6 +47,16 @@ public class HashedIndex implements Index {
            } else {
                return null;
            }
+    }
+
+    public ArrayList<String> getTermFromDocument(Integer docID) {
+            ArrayList<String> terms = new ArrayList<String>();
+            for(String token : index.keySet()) {
+                if(index.get(token).getEntry(docID) != null) {
+                    terms.add(token);
+                }
+            }
+            return terms;
     }
 
     /**

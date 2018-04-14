@@ -8,6 +8,7 @@
 package ir;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -21,7 +22,7 @@ public interface Index {
 
     /** Mapping from document identifier to document length. */
     public HashMap<Integer,Integer> docLengths = new HashMap<Integer,Integer>();
-    
+
     public HashMap<String, Integer> docIdPageRank = new HashMap<String, Integer>();
 
     /** Inserts a token into the index. */
@@ -33,4 +34,5 @@ public interface Index {
     /** This method is called on exit. */
     public void cleanup();
 
+    public ArrayList<String> getTermFromDocument(Integer docID);
 }

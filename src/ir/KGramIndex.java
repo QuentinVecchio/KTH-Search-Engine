@@ -53,8 +53,8 @@ public class KGramIndex {
         List<KGramPostingsEntry> intersection = new ArrayList<KGramPostingsEntry>();
         int pointer1 = 0;
         int pointer2 = 0;
-        // System.out.println("P1 : " + Integer.toString(p1.size()));
-        // System.out.println("P2 : " + Integer.toString(p2.size()));
+        System.out.println("P1 : " + Integer.toString(p1.size()));
+        System.out.println("P2 : " + Integer.toString(p2.size()));
 
         while(pointer1 < p1.size() && pointer2 < p2.size()) {
             if(p1.get(pointer1).tokenID == p2.get(pointer2).tokenID) {
@@ -69,7 +69,7 @@ public class KGramIndex {
                 }
             }
         }
-        // System.out.println("Intersection : " + Integer.toString(intersection.size()));
+        System.out.println("Intersection : " + Integer.toString(intersection.size()));
         return intersection;
     }
 
@@ -120,7 +120,16 @@ public class KGramIndex {
             }
             return results;
         } else {
-            return this.search("^" + token + "$");
+            String reg = "^" + token + "$";
+            List<KGramPostingsEntry> finalResult = new ArrayList<KGramPostingsEntry>();
+            List<KGramPostingsEntry> results = this.search("^" + token + "$");
+            for(int i=0;i<results.size();++i) {
+                String s = getTermByID(results.get(i).tokenID);
+                if(Pattern.matches(reg, s)) {
+                    finalResult.add(results.get(i));
+                }
+            }
+            return finalResult;
         }
     }
 
@@ -128,7 +137,7 @@ public class KGramIndex {
         List<KGramPostingsEntry> tokenIntersection = null;
         for(int i=0;i<=token.length()-K;++i) {
             String kgram = token.substring(i,i+K);
-            // System.out.println("-> " + kgram);
+            System.out.println("-> " + kgram);
             List<KGramPostingsEntry> postings = getPostings(kgram);
             if(postings != null) {
                 if(tokenIntersection == null) {

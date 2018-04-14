@@ -142,13 +142,19 @@ public class SpellChecker {
             for(int k=0;k<corrections.size();++k) {
                 int dist = editDistance(term, corrections.get(k));
                 if(dist <= MAX_EDIT_DISTANCE) {
-                    distances.put(corrections.get(k), dist);
+                    PostingsList list = index.getPostings(corrections.get(k));
+                    int weight = 0;
+                    for(int i=0;i<list.size();++i) {
+                        weight += list.list.get(i).positions.size();
+                    }
+                    System.out.println(corrections.get(k) + " : " + Integer.toString(weight));
+                    distances.put(corrections.get(k), weight);
                 }
             }
             System.out.println("Number of matches after edit distance : " + Integer.toString(distances.size()));
             // Sort the result
             int size = distances.size();
-            if(corrections.size() > limit) {
+            if(size > limit) {
                 size = limit;
             }
             String[] results = new String[size];
@@ -156,12 +162,12 @@ public class SpellChecker {
                 results[i] = null;
                 Integer best = null;
                 for(String key : distances.keySet()) {
-                    if(best == null || best > distances.get(key)) {
+                    if(best == null || best < distances.get(key)) {
                         results[i] = key;
                         best = distances.get(results[i]);
                     }
                 }
-                distances.put(results[i], Integer.MAX_VALUE);
+                distances.put(results[i], 0);
             }
             return results;
         }

@@ -361,4 +361,14 @@ public class PersistentScalableHashedIndex extends PersistentHashedIndex {
             e.printStackTrace();
         }
     }
+
+    public ArrayList<String> getTermFromDocument(Integer docID) {
+            ArrayList<String> terms = new ArrayList<String>();
+            for(String token : index.keySet()) {
+                if(index.get(token).getEntry(docID) != null) {
+                    terms.add(token);
+                }
+            }
+            return terms;
+    }
 }
